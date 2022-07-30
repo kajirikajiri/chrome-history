@@ -40,6 +40,8 @@
     }
   ],
   "permissions": [
-    "tabs"
+    "tabs",
+    "sessions",
+    "unlimitedStorage"
   ]
 }

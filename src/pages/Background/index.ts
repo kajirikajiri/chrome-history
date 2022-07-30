@@ -2,46 +2,33 @@ import { IDataBase, Connection, ITable } from 'jsstore'
 import workerInjector from "jsstore/dist/worker_injector";
 import { browser } from "webextension-polyfill-ts"
 
-// const getWorkerPath = () => {
-//     // return dev build when env is development
-//     console.log(process.env.NODE_ENV);
-//     if (process.env.NODE_ENV === 'development') {
-//         return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.js");
-//     } else { // return prod build when env is production
-//         return require("file-loader?name=scripts/[name].[hash].js!jsstore/dist/jsstore.worker.min.js");
-//     }
-// };
-
+const connection = new Connection();
 
 (async () => {
-    // const workerPath = getWorkerPath().default;
-    const connection = new Connection();
     connection.addPlugin(workerInjector);
     const dbName = 'JsStore_Demo';
-    const tblProduct: ITable = {
-        name: 'Product',
+    const tblEvent: ITable = {
+        name: 'BrowserEvent',
         columns: {
-            // Here "Id" is name of column 
+            // notNull
             id: { primaryKey: true, autoIncrement: true },
-            itemName: { notNull: true, dataType: "string" },
-            price: { notNull: true, dataType: "number" },
-            quantity: { notNull: true, dataType: "number" }
+            eventType: { notNull: true, dataType: "string" },
+            createdAt: { notNull: true, dataType: "date_time" },
+
+            // allow null
+            tabId: { notNull: false, dataType: "number" },
+            tab: { notNull: false, dataType: "object" },
+            changeInfo: { notNull: false, dataType: "object" },
+            removeInfo: { notNull: false, dataType: "object" },
+            activeInfo: { notNull: false, dataType: "object" },
+            moveInfo: { notNull: false, dataType: "object" },
+            highlightInfo: { notNull: false, dataType: "object" },
+            windowId: { notNull: false, dataType: "number" },
         }
-    };
-    // const tblPage: ITable = {
-    //     name: 'Page',
-    //     columns: {
-    //         id: { primaryKey: true, autoIncrement: true },
-    //         url: { notNull: true, dataType: "string" },
-    //         tabId: { notNull: true, dataType: "string" },
-    //         openedAt: { notNull: true, dataType: "string" },
-    //         closedAt: { notNull: true, dataType: "string" },
-    //         domId: { notNull: true, dataType: "string" },
-    //     }
-    // }
+    }
     const database: IDataBase = {
         name: dbName,
-        tables: [tblProduct]
+        tables: [tblEvent]
     }
     const isDbCreated = await connection.initDb(database);
     if (isDbCreated === true) {
@@ -49,47 +36,169 @@ import { browser } from "webextension-polyfill-ts"
     } else {
         console.log("db opened");
     }
-    const value = {
-        itemName: 'Blue Jeans',
-        price: 2000,
-        quantity: 1000
-    }
-    const insertCount = await connection.insert({
-        into: 'Product',
-        values: [value]
-    });
-
-    console.log(`${insertCount} rows inserted`);
-    const results = await connection.select({
-        from: 'Product',
-        where: {
-            id: 2
-        }
-    });
-    console.log(results)
 })();
 
-browser.tabs.onUpdated.addListener(function (activeInfo) {
-    console.log('updated', activeInfo)
+
+browser.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    const value = {
+        eventType: 'tabs.onUpdated',
+        tab,
+        tabId,
+        changeInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
 
-browser.tabs.onCreated.addListener(function (activeInfo) {
-    console.log('created', activeInfo)
+browser.tabs.onCreated.addListener(function (tab) {
+    const value = {
+        eventType: 'tabs.onCreated',
+        tab,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
 
-browser.tabs.onRemoved.addListener(function (activeInfo) {
-    console.log('removed', activeInfo)
+
+browser.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+    const value = {
+        eventType: 'tabs.onRemoved',
+        tabId,
+        removeInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
 
-browser.tabs.onActivated.addListener(async function (activeInfo) {
-    console.log('activated', activeInfo)
-    console.log("hello")
+browser.tabs.onActivated.addListener(function (activeInfo) {
+    const value = {
+        eventType: 'tabs.onActivated',
+        activeInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
 
-browser.tabs.onMoved.addListener(function (activeInfo) {
-    console.log('moved', activeInfo)
+browser.tabs.onMoved.addListener(function (tabId, moveInfo) {
+    const value = {
+        eventType: 'tabs.onMoved',
+        tabId,
+        moveInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
 
-browser.tabs.onHighlighted.addListener(function (activeInfo) {
-    console.log('highlighted', activeInfo)
+browser.tabs.onHighlighted.addListener(function (highlightInfo) {
+    const value = {
+        eventType: 'tabs.onHighlighted',
+        highlightInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.tabs.onAttached.addListener(function (tabId, attachInfo) {
+    const value = {
+        eventType: 'tabs.onAttached',
+        tabId,
+        attachInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.tabs.onDetached.addListener(function (tabId, detachInfo) {
+    const value = {
+        eventType: 'tabs.onDetached',
+        tabId,
+        detachInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.tabs.onReplaced.addListener(function (addedTabId, removedTabId) {
+    const value = {
+        eventType: 'tabs.onReplaced',
+        addedTabId,
+        removedTabId,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.tabs.onZoomChange.addListener(function (zoomChangeInfo) {
+    const value = {
+        eventType: 'tabs.onZoomChange',
+        zoomChangeInfo,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.windows.onFocusChanged.addListener(function (windowId) {
+    const value = {
+        eventType: 'windows.onFocusChanged',
+        windowId,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+});
+
+browser.windows.onCreated.addListener(function (window) {
+    const value = {
+        eventType: 'windows.onCreated',
+        window,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
+})
+
+browser.windows.onRemoved.addListener(function (windowId) {
+    const value = {
+        eventType: 'windows.onRemoved',
+        windowId,
+        createdAt: new Date(),
+    }
+    connection.insert({
+        into: "BrowserEvent",
+        values: [value]
+    })
 })
