@@ -3,6 +3,7 @@ import { Tabs, Windows } from 'webextension-polyfill-ts';
 import { IDataBase, Connection } from 'jsstore'
 import workerInjector from "jsstore/dist/worker_injector";
 import './Options.css';
+import { DataGrid, GridColDef, GridValueFormatterParams } from '@mui/x-data-grid';
 
 interface Props {
   title: string;
@@ -99,9 +100,61 @@ type WindowsOnRemoved = {
   createdAt: Date
 }
 
-
 const connection = new Connection();
 connection.addPlugin(workerInjector);
+
+const columns: GridColDef[] = [
+  { field: 'id', headerName: 'ID', width: 90 },
+  { field: 'windowId', headerName: 'windowId', width: 90 },
+  { field: 'tabId', headerName: 'tabId', width: 90 },
+  { field: 'eventType', headerName: 'イベントタイプ', width: 250 },
+  {
+    field: 'createdAt', headerName: 'createdAt', width: 200, valueFormatter: (params: GridValueFormatterParams<any>) => {
+      const formatedDate = new Intl.DateTimeFormat("ja-jp", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }).format(params.value);
+      return formatedDate
+    }
+  },
+]
+
+// const browserEventsToRows = (events: BrowserEvent[]) => {
+//   events.map(event => {
+//     if (event.eventType === 'tabs.onActivated') {
+//       return {
+//         id: event.id,
+//         eventType: event.eventType,
+//         createdAt: event.createdAt,
+//         "activeInfo.windowId": event.activeInfo.windowId,
+//         "activeInfo.tabId": event.activeInfo.tabId,
+//         "activeInfo.previousTabId": event.activeInfo.previousTabId,
+//       }
+//     }
+//     if (event.eventType === 'tabs.onCreated') {
+//       return {
+//         id: event.id,
+//         eventType: event.eventType,
+//         createdAt: event.createdAt,
+//         "tab.id": event.tab.id,
+//         "tab.url": event.tab.url,
+//         "tab.title": event.tab.title,
+//         "tab.favIconUrl": event.tab.favIconUrl,
+//         "tab.status": event.tab.status,
+//         "tab.incognito": event.tab.incognito,
+//         "tab.active": event.tab.active,
+//         "tab.pinned": event.tab.pinned,
+//         "tab.index": event.tab.index,
+//         "tab.windowId": event.tab.windowId,
+//         "tab.openerTabId": event.tab.openerTabId,
+//       }
+//     }
+//   })
+// }
 
 const Options: React.FC<Props> = ({ title }: Props) => {
   const [loading, setLoading] = React.useState(true);
@@ -124,10 +177,13 @@ const Options: React.FC<Props> = ({ title }: Props) => {
   }, [])
   if (loading) return <>Loading...</>;
 
-  return <div>
-    {events.map((event) => {
-      return <div key={event.id}>{event.id}</div>
-    })}
+  return <div style={{ height: '100vh', width: '100%' }}>
+    <DataGrid
+      rows={events}
+      columns={columns}
+      checkboxSelection
+      disableSelectionOnClick
+    />
   </div>
 };
 
