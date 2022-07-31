@@ -123,39 +123,6 @@ const columns: GridColDef[] = [
   },
 ]
 
-// const browserEventsToRows = (events: BrowserEvent[]) => {
-//   events.map(event => {
-//     if (event.eventType === 'tabs.onActivated') {
-//       return {
-//         id: event.id,
-//         eventType: event.eventType,
-//         createdAt: event.createdAt,
-//         "activeInfo.windowId": event.activeInfo.windowId,
-//         "activeInfo.tabId": event.activeInfo.tabId,
-//         "activeInfo.previousTabId": event.activeInfo.previousTabId,
-//       }
-//     }
-//     if (event.eventType === 'tabs.onCreated') {
-//       return {
-//         id: event.id,
-//         eventType: event.eventType,
-//         createdAt: event.createdAt,
-//         "tab.id": event.tab.id,
-//         "tab.url": event.tab.url,
-//         "tab.title": event.tab.title,
-//         "tab.favIconUrl": event.tab.favIconUrl,
-//         "tab.status": event.tab.status,
-//         "tab.incognito": event.tab.incognito,
-//         "tab.active": event.tab.active,
-//         "tab.pinned": event.tab.pinned,
-//         "tab.index": event.tab.index,
-//         "tab.windowId": event.tab.windowId,
-//         "tab.openerTabId": event.tab.openerTabId,
-//       }
-//     }
-//   })
-// }
-
 const Options: React.FC<Props> = ({ title }: Props) => {
   const [loading, setLoading] = React.useState(true);
   const [events, setEvents] = React.useState<BrowserEvent[]>([]);
